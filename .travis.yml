@@ -5,26 +5,37 @@ git:
 
 language: node_js
 
+os:
+  - linux
+  - windows
+
 node_js:
   - "10"
+
+env:
+  global:
+    - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then NPM_CACHE_FOLDER=$APPDATA/npm-cache; fi
+    - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then NPM_CACHE_FOLDER=$HOME/.npm; fi
 
 install:
   - npm ci
 
 before_script:
   - curl --silent https://v4.ifconfig.co/
+  - npm config get cache
 
 script:
-  - npm run all-with-coverage
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then npm run all-with-coverage; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then npm run test; fi
 
 after_success:
-  - npm run coveralls
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then npm run coveralls; fi
+
+cache:
+  directories:
+    - "$NPM_CACHE_FOLDER"
 
 notifications:
   email:
     - joshua@mervine.net
     - bootstrap@maxcdn.com
-
-cache:
-  directories:
-    - "$HOME/.npm"
